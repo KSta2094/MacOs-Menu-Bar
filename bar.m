@@ -1,7 +1,10 @@
 #import <Cocoa/Cocoa.h>
 
+#define BOXWIDTH 60.0  // make a little wider for nice fit
+#define BOXHEIGHT 30.0 // taller
+#define radius 15.0    // half height for nice rounding
+#define fontSize 14.0  // matching font size
 #define HEIGHT 40
-
 @interface BarWindow : NSWindow
 @end
 
@@ -14,6 +17,11 @@
 // TODO
 // create function to make a text filed so that i have uniform way of making
 // thme
+
+NSTextField *createField() {
+  return [[NSTextField alloc]
+      initWithFrame:NSMakeRect(20, 5, BOXWIDTH, BOXHEIGHT)];
+}
 
 NSString *run_command(NSString *command) {
   FILE *fp;
@@ -59,13 +67,8 @@ int main(int argc, const char *argv[]) {
                    screenFrame.origin.y + screenFrame.size.height - barHeight,
                    screenFrame.size.width, barHeight);
 
-    CGFloat boxWidth = 60.0;     // make a little wider for nice fit
-    CGFloat boxHeight = 30.0;    // taller
-    CGFloat cornerRadius = 15.0; // half height for nice rounding
-    CGFloat fontSize = 14.0;     // matching font size
-
     NSTextView *icon = [[NSTextView alloc]
-        initWithFrame:NSMakeRect(20, 5, boxWidth, boxHeight)];
+        initWithFrame:NSMakeRect(20, 5, BOXWIDTH, BOXHEIGHT)];
 
     // Setup icon text
     [icon setString:@"􀪏"]; // SF Symbol character
@@ -77,11 +80,11 @@ int main(int argc, const char *argv[]) {
     [icon setWantsLayer:YES];
     [icon setBackgroundColor:[[NSColor systemGreenColor]
                                  colorWithAlphaComponent:0.6]];
-    icon.layer.cornerRadius = cornerRadius;
+    icon.layer.cornerRadius = radius;
     icon.layer.masksToBounds = YES;
 
     NSTextField *curent_app = [[NSTextField alloc]
-        initWithFrame:NSMakeRect(90, 5, boxWidth, boxHeight)];
+        initWithFrame:NSMakeRect(90, 5, BOXWIDTH, BOXHEIGHT)];
 
     [curent_app
         setFont:[NSFont systemFontOfSize:12]]; // Slightly smaller than icon
@@ -105,7 +108,7 @@ int main(int argc, const char *argv[]) {
 
     // Setup workspace text
     NSTextField *crt_work = [[NSTextField alloc]
-        initWithFrame:NSMakeRect(160, 5, boxWidth, boxHeight)];
+        initWithFrame:NSMakeRect(160, 5, BOXWIDTH, BOXHEIGHT)];
     [crt_work
         setFont:[NSFont systemFontOfSize:16]]; // Slightly smaller than icon
     [crt_work setAlignment:NSTextAlignmentCenter];
