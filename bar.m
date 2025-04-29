@@ -17,8 +17,6 @@
 @end
 
 // TODO
-// create function to make a text filed so that i have uniform way of making
-// thme
 void test() {}
 
 NSTextField *createField(CGFloat x) {
