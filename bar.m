@@ -1,10 +1,12 @@
 #import <Cocoa/Cocoa.h>
 
-#define BOXWIDTH 60.0  // make a little wider for nice fit
-#define BOXHEIGHT 30.0 // taller
+#define BOXWIDTH 55.0  // make a little wider for nice fit
+#define BOXHEIGHT 25.0 // taller
 #define radius 15.0    // half height for nice rounding
-#define fontSize 14.0  // matching font size
-#define HEIGHT 40
+#define fontSize 12.0  // matching font size
+#define HEIGHT 35
+#define COLOR systemPurpleColor
+#define OPACITY 0.1
 @interface BarWindow : NSWindow
 @end
 
@@ -17,12 +19,24 @@
 // TODO
 // create function to make a text filed so that i have uniform way of making
 // thme
+NSTextField *createField(CGFloat x) {
 
-NSTextField *createField() {
-  return [[NSTextField alloc]
-      initWithFrame:NSMakeRect(20, 5, BOXWIDTH, BOXHEIGHT)];
+  NSTextField *text =
+      [[NSTextField alloc] initWithFrame:NSMakeRect(x, 5, BOXWIDTH, BOXHEIGHT)];
+  [text
+      setFont:[NSFont systemFontOfSize:fontSize]]; // Slightly smaller than icon
+  [text setAlignment:NSTextAlignmentCenter];
+  [text setEditable:NO];
+  [text setBordered:NO];
+  [text setBezeled:NO];
+  [text setDrawsBackground:YES];
+  [text setBackgroundColor:[[NSColor COLOR] colorWithAlphaComponent:OPACITY]];
+  [text setSelectable:NO];
+  [text setWantsLayer:YES];
+  text.layer.cornerRadius = radius;
+  text.layer.masksToBounds = YES;
+  return text;
 }
-
 NSString *run_command(NSString *command) {
   FILE *fp;
   char buffer[4096];
@@ -62,43 +76,15 @@ int main(int argc, const char *argv[]) {
     CGFloat barHeight = HEIGHT;
 
     // Create a frame at the top of the screen
-    NSRect barFrame =
-        NSMakeRect(screenFrame.origin.x,
-                   screenFrame.origin.y + screenFrame.size.height - barHeight,
-                   screenFrame.size.width, barHeight);
+    NSRect barFrame = NSMakeRect(screenFrame.origin.x + 2,
+                                 screenFrame.origin.y - 4 +
+                                     screenFrame.size.height - barHeight,
+                                 screenFrame.size.width, barHeight);
 
-    NSTextView *icon = [[NSTextView alloc]
-        initWithFrame:NSMakeRect(20, 5, BOXWIDTH, BOXHEIGHT)];
-
-    // Setup icon text
-    [icon setString:@"􀪏"]; // SF Symbol character
-    [icon setFont:[NSFont systemFontOfSize:fontSize + 6]];
-    [icon setAlignment:NSTextAlignmentCenter]; // Center the text
-    [icon setEditable:NO];
-    [icon setDrawsBackground:YES];
-    [icon setSelectable:NO];
-    [icon setWantsLayer:YES];
-    [icon setBackgroundColor:[[NSColor systemGreenColor]
-                                 colorWithAlphaComponent:0.6]];
-    icon.layer.cornerRadius = radius;
-    icon.layer.masksToBounds = YES;
-
-    NSTextField *curent_app = [[NSTextField alloc]
-        initWithFrame:NSMakeRect(90, 5, BOXWIDTH, BOXHEIGHT)];
-
-    [curent_app
-        setFont:[NSFont systemFontOfSize:12]]; // Slightly smaller than icon
-    [curent_app setAlignment:NSTextAlignmentCenter];
-    [curent_app setEditable:NO];
-    [curent_app setBordered:NO];
-    [curent_app setBezeled:NO];
-    [curent_app setDrawsBackground:YES];
-    [curent_app setBackgroundColor:[[NSColor systemGreenColor]
-                                       colorWithAlphaComponent:0.6]];
-    [curent_app setSelectable:NO];
-    [curent_app setWantsLayer:YES];
-    curent_app.layer.cornerRadius = 15.0; // Half height = perfect pill
-    curent_app.layer.masksToBounds = YES;
+    NSTextField *icon = createField(20);
+    [icon setStringValue:@"􀪏"]; // SF Symbol character
+                                   //
+    NSTextField *curent_app = createField(90);
     NSString *arrow = @"􀯻 ";
     [curent_app
         setStringValue:[arrow
@@ -107,24 +93,13 @@ int main(int argc, const char *argv[]) {
                                            @"--format %{app-name}")]];
 
     // Setup workspace text
-    NSTextField *crt_work = [[NSTextField alloc]
-        initWithFrame:NSMakeRect(160, 5, BOXWIDTH, BOXHEIGHT)];
-    [crt_work
-        setFont:[NSFont systemFontOfSize:16]]; // Slightly smaller than icon
-    [crt_work setAlignment:NSTextAlignmentCenter];
-    [crt_work setEditable:NO];
-    [crt_work setBordered:NO];
-    [crt_work setBezeled:NO];
-    [crt_work setDrawsBackground:YES];
-    [crt_work setBackgroundColor:[[NSColor systemGreenColor]
-                                     colorWithAlphaComponent:0.6]];
-    [crt_work setSelectable:NO];
-    [crt_work setWantsLayer:YES];
-    crt_work.layer.cornerRadius = 15.0; // Half height = perfect pill
-    crt_work.layer.masksToBounds = YES;
+    NSTextField *crt_work = createField(160);
     [crt_work
         setStringValue:run_command(@"aerospace list-workspaces --focused")];
 
+    NSButton *btn = [[NSButton alloc]
+        initWithFrame:NSMakeRect(300, 5, BOXWIDTH, BOXHEIGHT)];
+    [btn setTitle:@"CONF"];
     // Create window
     BarWindow *window =
         [[BarWindow alloc] initWithContentRect:barFrame
@@ -135,13 +110,14 @@ int main(int argc, const char *argv[]) {
     [window setLevel:NSStatusWindowLevel]; // Always on top
     [window setOpaque:NO];
     [window setBackgroundColor:[[NSColor systemPurpleColor]
-                                   colorWithAlphaComponent:0.0]];
+                                   colorWithAlphaComponent:0.05]];
     [window setIgnoresMouseEvents:YES]; // If you want it to be clickable,
                                         // otherwise YES
     [window makeKeyAndOrderFront:nil];
     [[window contentView] addSubview:crt_work];
     [[window contentView] addSubview:icon];
     [[window contentView] addSubview:curent_app];
+    [[window contentView] addSubview:btn];
 
     NSTimer *t = [NSTimer
         scheduledTimerWithTimeInterval:1.0
