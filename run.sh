@@ -1,2 +1,2 @@
-clang -g -framework Cocoa bar.m -o bar
+clang -g -framework Cocoa *.m -o bar
 ./bar
