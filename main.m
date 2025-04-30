@@ -9,7 +9,7 @@
   return YES;
 }
 @end
-
+// I am in the work direcotry
 int main(int argc, const char *argv[]) {
   @autoreleasepool {
     // Start the app
