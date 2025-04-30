@@ -17,8 +17,33 @@
 @end
 
 // TODO
-// create function to make a text filed so that i have uniform way of making
-// thme
+// [:::::]
+void adjustTextFieldRight(NSTextField *field, NSString *text, NSFont *font,
+                          CGFloat padding) {
+  NSDictionary *attributes = @{NSFontAttributeName : font};
+  NSSize textSize = [text sizeWithAttributes:attributes];
+  [field setStringValue:text];
+
+  NSRect frame = [field frame];
+  frame.size.width = textSize.width + padding;
+
+  [field setFrame:frame];
+}
+
+void adjustTextFieldLeft(NSTextField *field, NSString *text, NSFont *font,
+                         CGFloat padding) {
+  NSDictionary *attributes = @{NSFontAttributeName : font};
+  NSSize textSize = [text sizeWithAttributes:attributes];
+  [field setStringValue:text];
+
+  NSRect frame = [field frame];
+  frame.size.width = textSize.width + 20;
+  frame.origin.x = [[NSScreen mainScreen] frame].size.width - frame.size.width -
+                   padding - 10;
+
+  [field setFrame:frame];
+}
+
 NSTextField *createField(CGFloat x) {
 
   NSTextField *text =
@@ -35,9 +60,13 @@ NSTextField *createField(CGFloat x) {
   [text setWantsLayer:YES];
   text.layer.cornerRadius = radius;
   text.layer.masksToBounds = YES;
+  [text setLineBreakMode:NSLineBreakByTruncatingTail];
+  [text.cell setUsesSingleLineMode:YES];
   return text;
 }
+
 NSString *run_command(NSString *command) {
+
   FILE *fp;
   char buffer[4096];
   NSMutableString *result = [NSMutableString string];
@@ -84,8 +113,9 @@ int main(int argc, const char *argv[]) {
     NSTextField *icon = createField(20);
     [icon setStringValue:@"􀪏"]; // SF Symbol character
                                    //
-    NSTextField *curent_app = createField(90);
+    NSTextField *curent_app = createField(160);
     NSString *arrow = @"􀯻 ";
+
     [curent_app
         setStringValue:[arrow
                            stringByAppendingString:
@@ -93,13 +123,24 @@ int main(int argc, const char *argv[]) {
                                            @"--format %{app-name}")]];
 
     // Setup workspace text
-    NSTextField *crt_work = createField(160);
+    NSTextField *crt_work = createField(90);
     [crt_work
         setStringValue:run_command(@"aerospace list-workspaces --focused")];
 
-    NSButton *btn = [[NSButton alloc]
-        initWithFrame:NSMakeRect(300, 5, BOXWIDTH, BOXHEIGHT)];
-    [btn setTitle:@"CONF"];
+    NSTextField *time = createField(screenFrame.size.width - BOXWIDTH);
+    [time setStringValue:run_command(@"date '+%a %e %b %H:%M'")];
+
+    NSTextField *current_song =
+        createField(screenFrame.size.width - BOXWIDTH - 200);
+
+    NSString *song = @"􀑪 ";
+    [current_song
+        setStringValue:run_command(
+                           @"osascript -e 'tell application \"Spotify\" to if "
+                           @"player state is playing then artist of current "
+                           @"track & \" - \" & name of current track'")];
+
+    NSString *empty = @"";
     // Create window
     BarWindow *window =
         [[BarWindow alloc] initWithContentRect:barFrame
@@ -117,7 +158,8 @@ int main(int argc, const char *argv[]) {
     [[window contentView] addSubview:crt_work];
     [[window contentView] addSubview:icon];
     [[window contentView] addSubview:curent_app];
-    [[window contentView] addSubview:btn];
+    [[window contentView] addSubview:time];
+    [[window contentView] addSubview:current_song];
 
     NSTimer *t = [NSTimer
         scheduledTimerWithTimeInterval:1.0
@@ -129,15 +171,52 @@ int main(int argc, const char *argv[]) {
                                                @"aerospace list-workspaces "
                                                @"--focused")];
 
-                                   [curent_app
-                                       setStringValue:
-                                           [arrow stringByAppendingString:
-                                                      run_command(
-                                                          @"aerospace "
-                                                          @"list-windows "
-                                                          @"--focused "
-                                                          @"--format "
-                                                          @"%{app-name}")]];
+                                   adjustTextFieldLeft(
+                                       current_song,
+                                       [song stringByAppendingString:
+                                                 run_command(
+                                                     @"osascript -e 'tell "
+                                                     @"application "
+                                                     @"\"Spotify\" to if "
+                                                     @"player state is "
+                                                     @"playing then artist "
+                                                     @"of current "
+                                                     @"track & \" - \" & "
+                                                     @"name of current "
+                                                     @"track'")],
+                                       [NSFont systemFontOfSize:fontSize],
+                                       time.frame.size.width + 10);
+
+                                   if ([empty
+                                           isEqualToString:
+                                               run_command(@"osascript -e "
+                                                           @"'tell application "
+                                                           @"\"Spotify\" to if "
+                                                           @"player state is "
+                                                           @"playing then "
+                                                           @"artist of current "
+                                                           @"track & \" - \" & "
+                                                           @"name of current "
+                                                           @"track'")]) {
+
+                                     [current_song setHidden:YES];
+                                   } else {
+                                     [current_song setHidden:NO];
+                                   };
+                                   adjustTextFieldRight(
+                                       curent_app,
+                                       [arrow stringByAppendingString:
+                                                  run_command(@"aerospace "
+                                                              @"list-windows "
+                                                              @"--focused "
+                                                              @"--format "
+                                                              @"%{app-name}")],
+                                       [NSFont systemFontOfSize:fontSize], 15);
+
+                                   adjustTextFieldLeft(
+                                       time,
+                                       run_command(@"date '+%a %e %b %H:%M'"),
+                                       [NSFont systemFontOfSize:fontSize], 5);
                                  }];
     [NSApp run];
   }
