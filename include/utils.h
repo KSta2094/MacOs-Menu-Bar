@@ -1,5 +1,6 @@
 #import <Cocoa/Cocoa.h>
 
+NSString *charge(int prc);
 
 void adjustTextFieldRight(NSTextField *field, NSString *text, NSFont *font,
                           CGFloat padding);
@@ -7,7 +8,4 @@ void adjustTextFieldRight(NSTextField *field, NSString *text, NSFont *font,
 void adjustTextFieldLeft(NSTextField *field, NSString *text, NSFont *font,
                          CGFloat padding);
 
-NSTextField *createField(CGFloat x) ;
-
-NSString *run_command(NSString *command) ;
-
+NSString *run_command(NSString *command);

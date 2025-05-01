@@ -1,2 +1,3 @@
-clang -g -framework Cocoa *.m -o bar
+clang -Iinclude -framework Cocoa main.m BarUI.m utils.m -o bar
 ./bar
+

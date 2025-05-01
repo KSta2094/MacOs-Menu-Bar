@@ -1,4 +1,5 @@
 #import "Cocoa/Cocoa.h"
+#import "include/BarUI.h"
 #import "include/constants.h"
 #import "include/utils.h"
 @interface BarWindow : NSWindow
@@ -28,10 +29,10 @@ int main(int argc, const char *argv[]) {
                                      screenFrame.size.height - barHeight,
                                  screenFrame.size.width, barHeight);
 
-    NSTextField *icon = createField(20);
+    NSTextField *icon = [[BarUI alloc] createField:20];
     [icon setStringValue:@"􀪏"]; // SF Symbol character
                                    //
-    NSTextField *curent_app = createField(160);
+    NSTextField *curent_app = [[BarUI alloc] createField:160];
     NSString *arrow = @"􀯻 ";
 
     [curent_app
@@ -41,16 +42,14 @@ int main(int argc, const char *argv[]) {
                                            @"--format %{app-name}")]];
 
     // Setup workspace text
-    NSTextField *crt_work = createField(90);
+    NSTextField *crt_work = [[BarUI alloc] createField:90];
     [crt_work
         setStringValue:run_command(@"aerospace list-workspaces --focused")];
 
-    NSTextField *time = createField(screenFrame.size.width - BOXWIDTH);
+    NSTextField *time = [[BarUI alloc] createField:0];
     [time setStringValue:run_command(@"date '+%a %e %b %H:%M'")];
 
-    NSTextField *current_song =
-        createField(screenFrame.size.width - BOXWIDTH - 200);
-
+    NSTextField *current_song = [[BarUI alloc] createField:0];
     NSString *song = @"􀑪 ";
     [current_song
         setStringValue:run_command(
@@ -59,6 +58,8 @@ int main(int argc, const char *argv[]) {
                            @"track & \" - \" & name of current track'")];
 
     NSString *empty = @"";
+
+    NSTextField *battery = [[BarUI alloc] createField:0];
     // Create window
     BarWindow *window =
         [[BarWindow alloc] initWithContentRect:barFrame
@@ -70,14 +71,15 @@ int main(int argc, const char *argv[]) {
     [window setOpaque:NO];
     [window setBackgroundColor:[[NSColor systemPurpleColor]
                                    colorWithAlphaComponent:0.05]];
-    [window setIgnoresMouseEvents:YES]; // If you want it to be clickable,
-                                        // otherwise YES
+    [window setIgnoresMouseEvents:NO]; // If you want it to be clickable,
+                                       // otherwise YES
     [window makeKeyAndOrderFront:nil];
     [[window contentView] addSubview:crt_work];
     [[window contentView] addSubview:icon];
     [[window contentView] addSubview:curent_app];
     [[window contentView] addSubview:time];
     [[window contentView] addSubview:current_song];
+    [[window contentView] addSubview:battery];
 
     NSTimer *t = [NSTimer
         scheduledTimerWithTimeInterval:1.0
@@ -88,7 +90,14 @@ int main(int argc, const char *argv[]) {
                                            run_command(
                                                @"aerospace list-workspaces "
                                                @"--focused")];
-
+                                   adjustTextFieldLeft(
+                                       battery,
+                                       charge(run_command(
+                                                  @"pmset -g batt | grep -Eo "
+                                                  @"'[0-9]+%' | tr -d '%'")
+                                                  .intValue),
+                                       [NSFont systemFontOfSize:fontSize],
+                                       time.frame.size.width + 20);
                                    adjustTextFieldLeft(
                                        current_song,
                                        [song stringByAppendingString:
@@ -103,7 +112,8 @@ int main(int argc, const char *argv[]) {
                                                      @"name of current "
                                                      @"track'")],
                                        [NSFont systemFontOfSize:fontSize],
-                                       time.frame.size.width + 10);
+                                       battery.frame.size.width +
+                                           time.frame.size.width + 40);
 
                                    if ([empty
                                            isEqualToString:
@@ -121,6 +131,7 @@ int main(int argc, const char *argv[]) {
                                    } else {
                                      [current_song setHidden:NO];
                                    };
+
                                    adjustTextFieldRight(
                                        curent_app,
                                        [arrow stringByAppendingString:
