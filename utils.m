@@ -3,11 +3,17 @@
 
 NSString *charge(int prc) {
 
-  NSString *charge = @"[";
+  NSString *charge = @"";
   int iter = round(prc / 10);
+
+  charge = [charge stringByAppendingString:@"["];
   for (int i = 0; i != iter; i++) {
     charge = [charge stringByAppendingString:@":"];
   }
+
+  charge = [charge
+      stringByAppendingString:[NSString stringWithFormat:@" %i%%", prc]];
+
   for (int i = 0; i != 10 - iter; i++) {
 
     charge = [charge stringByAppendingString:@" "];
@@ -37,6 +43,9 @@ void adjustTextFieldLeft(NSTextField *field, NSString *text, NSFont *font,
 
   NSRect frame = [field frame];
   frame.size.width = textSize.width + 20;
+  if (frame.size.width >= 350) {
+    frame.size.width = 350;
+  }
   frame.origin.x = [[NSScreen mainScreen] frame].size.width - frame.size.width -
                    padding - 20;
 

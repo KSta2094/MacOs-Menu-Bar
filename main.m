@@ -40,7 +40,6 @@ int main(int argc, const char *argv[]) {
                            stringByAppendingString:
                                run_command(@"aerospace list-windows --focused "
                                            @"--format %{app-name}")]];
-
     // Setup workspace text
     NSTextField *crt_work = [[BarUI alloc] createField:90];
     [crt_work
@@ -49,7 +48,7 @@ int main(int argc, const char *argv[]) {
     NSTextField *time = [[BarUI alloc] createField:0];
     [time setStringValue:run_command(@"date '+%a %e %b %H:%M'")];
 
-    NSTextField *current_song = [[BarUI alloc] createField:0];
+    NSTextField *current_song = [[BarUI alloc] createField:0 menu:true];
     NSString *song = @"􀑪 ";
     [current_song
         setStringValue:run_command(
