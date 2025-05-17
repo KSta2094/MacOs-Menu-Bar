@@ -9,3 +9,5 @@ void adjustTextFieldLeft(NSTextField *field, NSString *text, NSFont *font,
                          CGFloat padding);
 
 NSString *run_command(NSString *command);
+
+void pauseSong(id sender) ;

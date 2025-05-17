@@ -59,13 +59,25 @@ int main(int argc, const char *argv[]) {
 
              NSImageView *artwork =
                  [[NSImageView alloc] initWithFrame:NSMakeRect(10, 10, 40, 40)];
-             [artwork setImage:[NSImage imageNamed:@"defaultArt"]];
+             NSString *command =
+                 @"curl $(osascript -e 'tell application \"Spotify\" "
+                 @"to artwork url of current track') -o current_song/img.png";
+             system([command UTF8String]);
+             [artwork setImage:[[NSImage alloc]
+                                   initWithContentsOfFile:
+                                       @"/Users/konstantinaszaveckas/Sandbox/"
+                                       @"ObjC/Bar/current_song/img.png"]];
              [artwork setImageScaling:NSImageScaleProportionallyUpOrDown];
              [itemView addSubview:artwork];
 
              NSTextField *titleField = [[NSTextField alloc]
                  initWithFrame:NSMakeRect(60, 30, 180, 20)];
-             [titleField setStringValue:@"Modest"];
+             [titleField
+                 setStringValue:
+                     run_command(
+                         @"osascript -e 'tell application \"Spotify\" to  "
+                         @"name of current track'")];
+
              [titleField setFont:[NSFont boldSystemFontOfSize:13]];
              [titleField setBordered:NO];
              [titleField setEditable:NO];
@@ -75,7 +87,12 @@ int main(int argc, const char *argv[]) {
 
              NSTextField *subtitleField = [[NSTextField alloc]
                  initWithFrame:NSMakeRect(60, 12, 180, 16)];
-             [subtitleField setStringValue:@"Isaiah Rashad – Cilvia Demo"];
+             [subtitleField
+                 setStringValue:
+                     run_command(
+                         @"osascript -e 'tell application \"Spotify\" to  "
+                         @" artist of current "
+                         @"track & \" - \" & album of current track'")];
              [subtitleField setFont:[NSFont systemFontOfSize:11]];
              [subtitleField setTextColor:[NSColor secondaryLabelColor]];
              [subtitleField setBordered:NO];
@@ -84,11 +101,15 @@ int main(int argc, const char *argv[]) {
              [subtitleField setDrawsBackground:NO];
              [itemView addSubview:subtitleField];
 
-             NSButton *playButton =
-                 [[NSButton alloc] initWithFrame:NSMakeRect(250, 20, 20, 20)];
-             [playButton setBezelStyle:NSBezelStyleShadowlessSquare];
-             [playButton setTitle:@"▶︎"];
-             [itemView addSubview:playButton];
+             //             NSButton *playButton =
+             //                 [[NSButton alloc] initWithFrame:NSMakeRect(250,
+             //                 20, 20, 20)];
+             //             [playButton
+             //             setBezelStyle:NSBezelStyleShadowlessSquare];
+             //             [playButton setTitle:@"▶︎"];
+             //             [playButton setTarget:nil];
+             //             [playButton setAction:@selector(pauseSong)];
+             //             [itemView addSubview:playButton];
 
              // Wrap your itemView in a view controller
              NSViewController *vc = [[NSViewController alloc] init];
@@ -112,6 +133,7 @@ int main(int argc, const char *argv[]) {
                            @"player state is playing then artist of current "
                            @"track & \" - \" & name of current track'")];
 
+    NSTextField *vol = [[BarUI alloc] createField:0];
     NSString *empty = @"";
 
     NSTextField *battery = [[BarUI alloc] createField:0];
@@ -135,6 +157,7 @@ int main(int argc, const char *argv[]) {
     [[window contentView] addSubview:time];
     [[window contentView] addSubview:current_song];
     [[window contentView] addSubview:battery];
+    [[window contentView] addSubview:vol];
 
     NSTimer *t = [NSTimer
         scheduledTimerWithTimeInterval:1.0
@@ -152,31 +175,32 @@ int main(int argc, const char *argv[]) {
                                                   @"'[0-9]+%' | tr -d '%'")
                                                   .intValue),
                                        [NSFont systemFontOfSize:fontSize],
-                                       time.frame.size.width + 20);
+                                       time.frame.size.width +
+                                           vol.frame.size.width + 20);
                                    adjustTextFieldLeft(
                                        current_song,
                                        [song stringByAppendingString:
                                                  run_command(
                                                      @"osascript -e 'tell "
                                                      @"application "
-                                                     @"\"Spotify\" to if "
-                                                     @"player state is "
-                                                     @"playing then artist "
+                                                     @"\"Spotify\" to "
+                                                     @" "
+                                                     @" artist "
                                                      @"of current "
                                                      @"track & \" - \" & "
                                                      @"name of current "
                                                      @"track'")],
                                        [NSFont systemFontOfSize:fontSize],
                                        battery.frame.size.width +
-                                           time.frame.size.width + 40);
+                                           time.frame.size.width +
+                                           vol.frame.size.width + 30);
 
                                    if ([empty
                                            isEqualToString:
                                                run_command(@"osascript -e "
                                                            @"'tell application "
-                                                           @"\"Spotify\" to if "
-                                                           @"player state is "
-                                                           @"playing then "
+                                                           @"\"Spotify\" to "
+                                                           @" "
                                                            @"artist of current "
                                                            @"track & \" - \" & "
                                                            @"name of current "
@@ -186,7 +210,25 @@ int main(int argc, const char *argv[]) {
                                    } else {
                                      [current_song setHidden:NO];
                                    };
+                                   if ([run_command(@"SwitchAudioSource -c")
+                                           containsString:@"Speakers"]) {
+                                     [vol setStringValue:@"􀊩 : "];
+                                   } else {
+                                     [vol setStringValue:@"􀪷 : "];
+                                   }
 
+                                   adjustTextFieldLeft(
+                                       vol,
+                                       [[vol stringValue]
+                                           stringByAppendingString:
+                                               (run_command(
+                                                   @"osascript -e 'set ovol "
+                                                   @"to output volume of (get "
+                                                   @"volume settings)' -e "
+                                                   @"'return (ovol as string) "
+                                                   @"& \"%\"'"))],
+                                       [NSFont systemFontOfSize:fontSize],
+                                       time.frame.size.width + 10);
                                    adjustTextFieldRight(
                                        curent_app,
                                        [arrow stringByAppendingString:
@@ -202,6 +244,8 @@ int main(int argc, const char *argv[]) {
                                        run_command(@"date '+%a %e %b %H:%M'"),
                                        [NSFont systemFontOfSize:fontSize], 5);
                                  }];
+
+    [NSApp setActivationPolicy:NSApplicationActivationPolicyProhibited];
     [NSApp run];
   }
 

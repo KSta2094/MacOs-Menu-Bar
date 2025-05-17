@@ -1,6 +1,8 @@
 #import "Cocoa/Cocoa.h"
 #import "include/constants.h"
 
+void pauseSong(id sender) { NSLog(@"clcik"); }
+
 NSString *charge(int prc) {
 
   NSString *charge = @"";
@@ -43,8 +45,8 @@ void adjustTextFieldLeft(NSTextField *field, NSString *text, NSFont *font,
 
   NSRect frame = [field frame];
   frame.size.width = textSize.width + 20;
-  if (frame.size.width >= 350) {
-    frame.size.width = 350;
+  if (frame.size.width >= 200) {
+    frame.size.width = 200;
   }
   frame.origin.x = [[NSScreen mainScreen] frame].size.width - frame.size.width -
                    padding - 20;
